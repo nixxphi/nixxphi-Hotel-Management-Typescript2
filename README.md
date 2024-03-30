@@ -1,1 +1,1 @@
-# nixxphi-Hotel-Management-Typescript2
+# Hotel Management 2: Typescript
