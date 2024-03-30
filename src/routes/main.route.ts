@@ -1,7 +1,7 @@
 import { Express } from 'express';
-import roomRouter from './room.route.ts';
-import roomTypeRouter from './roomType.route.ts';
-import userRouter from './user.route.ts';
+import roomRouter from './room.route';
+import roomTypeRouter from './roomType.route';
+import userRouter from './user.route';
 
 const apiVersion = '/api/v1';
 

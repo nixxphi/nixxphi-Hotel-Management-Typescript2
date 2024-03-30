@@ -1,7 +1,7 @@
-import express from "express";
-import mainMiddleware from "./middlewares/main.middleware.ts";
+import Express from "express";
+import mainMiddleware from "./middlewares/main.middleware";
 
-const app = express();
+const app = Express();
 
 mainMiddleware(app);
 

@@ -4,11 +4,11 @@ import cors from "cors";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
 
-import config from "../configs/constants.config.ts";
-import errorHandler from "./errors.middleware.ts";
-import mainRoute from "../routes/main.route.ts";
+import config from "../configs/constants.config";
+import errorHandler from "./errors.middleware";
+import mainRoute from "../routes/main.route";
 
-import "../configs/db.config.ts";
+import "../configs/db.config";
 
 export default (app: Express): void => {
     app.use(morgan("common"));

@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { verifyToken, checkTokenValidity } from '../utils/token.util.ts';
-import { userService } from '../services/index.service.ts';
+import { verifyToken, checkTokenValidity } from '../utils/token.util';
+import { userService } from '../services/index.service';
 
 export default async (
   req: Request,

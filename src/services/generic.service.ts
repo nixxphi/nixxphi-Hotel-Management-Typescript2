@@ -1,6 +1,9 @@
 import { Document, Model, FilterQuery } from 'mongoose';
 
 class GenericService<T extends Document> {
+    getOne(id: string) {
+        throw new Error('Method not implemented.');
+    }
     private model: Model<T>;
 
     constructor(model: Model<T>) {

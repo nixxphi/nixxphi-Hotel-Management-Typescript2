@@ -1,6 +1,6 @@
 import { isValidObjectId } from "mongoose";
 import { Request, Response, NextFunction } from "express";
-import { logger } from "./logger.ts";
+import { logger } from "./logger";
 
 export default (id: string, helpers: { error: (message: string) => Response }): string => {
     if (!isValidObjectId(id)) {

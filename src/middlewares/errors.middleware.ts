@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { logger } from '../utils/logger.ts';
+import { logger } from '../utils/logger';
 
 export default (error: Error, req: Request, res: Response, next: NextFunction): Response => {
   logger.error(error);

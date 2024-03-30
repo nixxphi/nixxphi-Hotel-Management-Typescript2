@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { Request, Response } from 'express';
-import { userService } from '../services/index.service.ts';
+import { userService } from '../services/index.service';
 
 // Controller function for user registration
 export const register = async (req: Request, res: Response): Promise<Response> => {

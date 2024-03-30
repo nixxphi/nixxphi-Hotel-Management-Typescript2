@@ -1,15 +1,13 @@
 import { Request, Response } from 'express';
-import { roomService, roomTypeService } from '../services/index.service.ts';
+import { roomService, roomTypeService } from '../services/index.service';
+import { error } from './middlewares/errors.middleware';
 
 class RoomController {
-    // Creating rooms
     async createRoom(req: Request, res: Response): Promise<Response> {
         try {
-            const { name, roomType, price } = req.body;
+            const { name, roomType, price }: { name: string, roomType: string, price: number } = req.body;
 
-            const isExistingRoom = await roomService.find({
-                name
-            });
+            const isExistingRoom = await roomService.find({ name });
 
             if (isExistingRoom) {
                 return res.status(401).json({
@@ -18,9 +16,7 @@ class RoomController {
                 });
             }
 
-            const isExistingRoomType = await roomTypeService.find({
-                _id: roomType
-            });
+            const isExistingRoomType = await roomTypeService.find({ _id: roomType });
             if (!isExistingRoomType) {
                 return res.status(404).json({
                     success: false,
@@ -41,43 +37,31 @@ class RoomController {
         }
     }
 
-    // FOR FETCHING ALL ROOMS
     async getRoomsByFilter(req: Request, res: Response): Promise<Response> {
         try {
-
-            const name = req.query.search;
-            const roomTypeName = req.query.roomType;
-            const minPrice = req.query.minPrice;
-            const maxPrice = req.query.maxPrice;
+            const { search, roomType, minPrice, maxPrice } = req.query;
             const query: any = {};
 
-            if (name) {
-                query.name = name;
+            if (search) {
+                query.name = search.toString();
             }
 
-            if (roomTypeName) {
-                query["roomType.name"] = roomTypeName;
+            if (roomType) {
+                query["roomType.name"] = roomType.toString();
             }
 
             if (minPrice && maxPrice) {
-                // Adds the price range to the filter object and sets status to true
-                query.price = { $gte: minPrice, $lte: maxPrice };
-            }
-
-            else if (minPrice) {
-                // Adds the minimum price to the filter object and sets status to true
-                query.price = { $gte: minPrice };
-            }
-
-            else if (maxPrice) {
-                // Adds the maximum price to the filter object and sets status to true
-                query.price = { $gte: maxPrice, $lte: 0 };
+                query.price = { $gte: parseInt(minPrice.toString()), $lte: parseInt(maxPrice.toString()) };
+            } else if (minPrice) {
+                query.price = { $gte: parseInt(minPrice.toString()) };
+            } else if (maxPrice) {
+                query.price = { $lte: parseInt(maxPrice.toString()) };
             }
 
             const rooms = await roomService.search(query);
             return res.status(200).json({
                 success: true,
-                message: "Rooms fetched succesfully",
+                message: "Rooms fetched successfully",
                 data: rooms
             });
 
@@ -90,7 +74,6 @@ class RoomController {
         }
     }
 
-    // FOR FETCHING A SINGLE ROOM BY ID
     async getARoom(req: Request, res: Response): Promise<Response> {
         try {
             const room = await roomService.getOne(req.params.id);
@@ -103,7 +86,7 @@ class RoomController {
 
             return res.status(200).json({
                 success: true,
-                message: "Room fetched succesfully",
+                message: "Room fetched successfully",
                 data: room
             })
 
@@ -117,53 +100,36 @@ class RoomController {
         }
     }
 
-    // FOR UPDATING A ROOM BY ID
     async updateRoom(req: Request, res: Response): Promise<Response> {
         try {
-            const { name, price, roomType } = req.body;
+            const { name, price, roomType }: { name?: string, price?: number, roomType?: string } = req.body;
 
-            const isExistingRoom = await roomService.find({
-                name
-            });
-            if (isExistingRoom) {
-                return res.status(401).json({
-                    success: false,
-                    message: 'Room already exists'
-                });
-            }
-
-            const isExistingRoomType = await roomTypeService.find({
-                _id: roomType
-            });
-            if (!isExistingRoomType) {
+            // Validate if room exists
+            const room = await roomService.getOne(req.params.id);
+            if (!room) {
                 return res.status(404).json({
                     success: false,
-                    message: 'RoomType does not exist'
+                    message: 'Room not found'
                 });
             }
 
-            const data: any = {};
-            if (name) {
-                data.name = name;
-            }
-            if (price) {
-                data.price = price;
-            }
+            // Update room
+            if (name) room.name = name;
+            if (price) room.price = price;
             if (roomType) {
-                data.roomType = isExistingRoomType._id;
+                // Validate if roomType exists
+                const existingRoomType = await roomTypeService.find({ _id: roomType });
+                if (!existingRoomType) {
+                    return res.status(404).json({
+                        success: false,
+                        message: 'RoomType does not exist'
+                    });
+                }
+                room.roomType = existingRoomType._id;
             }
 
-            const updatedRoom = await roomService.update(
-                req.params.id,
-                data
-            );
-
-            if (!updatedRoom) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Room not updated'
-                });
-            }
+            // Save updated room
+            const updatedRoom = await roomService.update(room._id, room);
 
             return res.status(200).json({
                 success: true,
@@ -180,7 +146,6 @@ class RoomController {
         }
     }
 
-    // FOR DELETING A ROOM BY ID
     async deleteRoom(req: Request, res: Response): Promise<Response> {
         try {
             const room = await roomService.getOne(req.params.id);
@@ -191,7 +156,7 @@ class RoomController {
                 });
             }
 
-            const deletedRoom = await roomService.delete(room._id)
+            const deletedRoom = await roomService.delete(room._id);
             if (!deletedRoom) {
                 return res.status(400).json({
                     success: false,
@@ -201,7 +166,7 @@ class RoomController {
 
             return res.status(200).json({
                 success: true,
-                message: "Room deleted succesfully",
+                message: "Room deleted successfully",
                 data: deletedRoom
             })
 

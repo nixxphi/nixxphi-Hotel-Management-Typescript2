@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { roomService, roomTypeService } from '../services/index.service.ts';
+import { roomService, roomTypeService } from '../services/index.service';
 
 class RoomTypeController {
     // Controller function for creating a new room type
