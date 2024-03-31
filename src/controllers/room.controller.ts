@@ -1,19 +1,13 @@
 import { Request, Response } from 'express';
 import { roomService, roomTypeService } from '../services/index.service';
 import { any } from 'joi'; 
+import { roomSchema } from '../models/room.model';
 
-
-interface Room {
-  _id?: string; 
-  name: string;
-  roomType: string; 
-  price: number;
-}
 
 class RoomController {
     async createRoom(req: Request, res: Response): Promise<Response> {
         try {
-            const { name, roomType, price }: { name: string, roomType: string, price: number } = req.body;
+            const { name, roomType, price, deleted: boolean }: { name: string, roomType: string, price: number, deleted: boolean } = req.body;
 
             const isExistingRoom = await roomService.find({ name });
 
@@ -32,8 +26,8 @@ class RoomController {
                 });
             }
 
-            const newRoom: Room = { name, roomType, price }; // Use the Room interface
-            const createdRoom = await roomService.create(newRoom);
+        
+            const createdRoom = await roomService.create({ name, roomType, price });
 
             return res.status(201).json({ 
                 message: 'Room created successfully', 
@@ -44,7 +38,7 @@ class RoomController {
             console.error(error);
             return res.status(500).json({ 
                 success: false,
-                message: error.message // Consider more specific error handling
+                message: error.message 
             });
         }
     }
@@ -84,15 +78,15 @@ class RoomController {
             console.error(error);
             return res.status(500).json({ 
                 success: false,
-                message: error.message // Consider more specific error handling
+                message: error.message 
             });
         }
     }
 
     async getARoom(req: Request, res: Response): Promise<Response> {
         try {
-            const room = await roomService.getOne(req.params.id);
-            if (room === null) {  // Check for null to handle missing room
+            const room = await roomService.find(req.params.id as any) ;
+            if (room === null) {  
                 const errorMessage = 'Room not found';
                 console.error(errorMessage);
                 return res.status(404).json({
@@ -148,7 +142,7 @@ class RoomController {
               data.roomType = isExistingRoomType._id;
           } 
 
-          const updatedRoom = await roomService.update(req.params.id, data);
+          const updatedRoom = await roomService.update(req.params.id as any, data);
 
           if (!updatedRoom) {
               return res.status(400).json({ 
@@ -174,7 +168,7 @@ class RoomController {
 
   async deleteRoom(req: Request, res: Response): Promise<Response> {
     try {
-        const room = await roomService.getOne(req.params.id);
+        const room = await roomService.delete(req.params.id as any);
         if (room === null) {
             const errorMessage = 'Room not found';
             console.error(errorMessage);
@@ -184,9 +178,9 @@ class RoomController {
             });
         }
 
-        const deletedRoom = await roomService.delete(room._id); // Assuming roomService.delete returns the deleted room
+        const deletedRoom = await roomService.delete(room._id);
 
-        if (!deletedRoom) { // Check if the deletion was successful
+        if (!deletedRoom) { 
             return res.status(400).json({ 
                 success: false,
                 message: 'Room not deleted' 
@@ -196,14 +190,14 @@ class RoomController {
         return res.status(200).json({ 
             success: true,
             message: 'Room deleted successfully',
-            data: deletedRoom // Return the deleted room's data
+            data: deletedRoom 
         });
 
     } catch (error: any) {
         console.error(error);
         return res.status(500).json({ 
             success: false,
-            message: error.message // Consider more specific error handling
+            message: error.message 
         });
     }
   }
