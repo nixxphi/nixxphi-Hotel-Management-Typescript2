@@ -1,6 +1,14 @@
 import { Request, Response } from 'express';
 import { roomService, roomTypeService } from '../services/index.service';
-import { error } from './middlewares/errors.middleware';
+import { any } from 'joi'; 
+
+
+interface Room {
+  _id?: string; 
+  name: string;
+  roomType: string; 
+  price: number;
+}
 
 class RoomController {
     async createRoom(req: Request, res: Response): Promise<Response> {
@@ -10,66 +18,73 @@ class RoomController {
             const isExistingRoom = await roomService.find({ name });
 
             if (isExistingRoom) {
-                return res.status(401).json({
+                return res.status(401).json({ 
                     success: false,
-                    message: 'Room already exists'
+                    message: 'Room already exists' 
                 });
             }
 
             const isExistingRoomType = await roomTypeService.find({ _id: roomType });
             if (!isExistingRoomType) {
-                return res.status(404).json({
+                return res.status(404).json({ 
                     success: false,
-                    message: 'RoomType does not exist'
+                    message: 'RoomType does not exist' 
                 });
             }
 
-            const newRoom = await roomService.create({ name, roomType, price });
+            const newRoom: Room = { name, roomType, price }; // Use the Room interface
+            const createdRoom = await roomService.create(newRoom);
 
-            return res.status(201).json({
-                message: 'Room created successfully',
-                data: newRoom
+            return res.status(201).json({ 
+                message: 'Room created successfully', 
+                data: createdRoom 
             });
 
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-            return res.status(500).json({ message: error.message });
+            return res.status(500).json({ 
+                success: false,
+                message: error.message // Consider more specific error handling
+            });
         }
     }
 
     async getRoomsByFilter(req: Request, res: Response): Promise<Response> {
         try {
-            const { search, roomType, minPrice, maxPrice } = req.query;
+            const name: string = req.query.search?.toString() || '';
+            const roomTypeName: string = req.query.roomType?.toString() || '';
+            const minPrice: number = parseInt(req.query.minPrice?.toString() || '0');
+            const maxPrice: number = parseInt(req.query.maxPrice?.toString() || '0');
             const query: any = {};
 
-            if (search) {
-                query.name = search.toString();
+            if (name) {
+                query.name = name;
             }
 
-            if (roomType) {
-                query["roomType.name"] = roomType.toString();
+            if (roomTypeName) {
+                query['roomType.name'] = roomTypeName; // Assuming a nested structure for roomType
             }
 
             if (minPrice && maxPrice) {
-                query.price = { $gte: parseInt(minPrice.toString()), $lte: parseInt(maxPrice.toString()) };
+                query.price = { $gte: minPrice, $lte: maxPrice };
             } else if (minPrice) {
-                query.price = { $gte: parseInt(minPrice.toString()) };
+                query.price = { $gte: minPrice };
             } else if (maxPrice) {
-                query.price = { $lte: parseInt(maxPrice.toString()) };
+                query.price = { $lte: maxPrice };
             }
 
             const rooms = await roomService.search(query);
-            return res.status(200).json({
+            return res.status(200).json({ 
                 success: true,
-                message: "Rooms fetched successfully",
+                message: 'Rooms fetched successfully',
                 data: rooms
             });
 
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-            return res.status(500).json({
+            return res.status(500).json({ 
                 success: false,
-                message: error.message
+                message: error.message // Consider more specific error handling
             });
         }
     }
@@ -77,108 +92,122 @@ class RoomController {
     async getARoom(req: Request, res: Response): Promise<Response> {
         try {
             const room = await roomService.getOne(req.params.id);
-            if (!room) {
+            if (room === null) {  // Check for null to handle missing room
+                const errorMessage = 'Room not found';
+                console.error(errorMessage);
                 return res.status(404).json({
                     success: false,
-                    message: "Room not found"
+                    message: errorMessage
                 });
             }
 
             return res.status(200).json({
                 success: true,
-                message: "Room fetched successfully",
+                message: 'Room fetched successfully',
                 data: room
-            })
+            });
 
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-            return res.status(500).json({
+            return res.status(500).json({ 
                 success: false,
-                message: error.message
-            })
-
+                message: error.message 
+            });
         }
     }
+
 
     async updateRoom(req: Request, res: Response): Promise<Response> {
-        try {
-            const { name, price, roomType }: { name?: string, price?: number, roomType?: string } = req.body;
+      try {
+          const { name, price, roomType }: { name?: string, price?: number, roomType?: string } = req.body;
 
-            // Validate if room exists
-            const room = await roomService.getOne(req.params.id);
-            if (!room) {
-                return res.status(404).json({
-                    success: false,
-                    message: 'Room not found'
-                });
-            }
+          const isExistingRoom = await roomService.find({ name });
+          if (isExistingRoom) {
+              return res.status(401).json({ 
+                  success: false,
+                  message: 'Room already exists' 
+              });
+          }
 
-            // Update room
-            if (name) room.name = name;
-            if (price) room.price = price;
-            if (roomType) {
-                // Validate if roomType exists
-                const existingRoomType = await roomTypeService.find({ _id: roomType });
-                if (!existingRoomType) {
-                    return res.status(404).json({
-                        success: false,
-                        message: 'RoomType does not exist'
-                    });
-                }
-                room.roomType = existingRoomType._id;
-            }
+          const isExistingRoomType = await roomTypeService.find({ _id: roomType });
+          if (!isExistingRoomType) {
+              return res.status(404).json({ 
+                  success: false,
+                  message: 'RoomType does not exist' 
+              });
+          }
 
-            // Save updated room
-            const updatedRoom = await roomService.update(room._id, room);
+          const data: Partial<Room> = {}; 
+          if (name) {
+              data.name = name;
+          } 
+          if (price) {
+              data.price = price;
+          } 
+          if (roomType) {
+              data.roomType = isExistingRoomType._id;
+          } 
 
-            return res.status(200).json({
-                success: true,
-                message: 'Room updated successfully',
-                data: updatedRoom
-            });
+          const updatedRoom = await roomService.update(req.params.id, data);
 
-        } catch (error) {
-            console.error(error);
-            return res.status(500).json({
+          if (!updatedRoom) {
+              return res.status(400).json({ 
+                  success: false,
+                  message: 'Room not updated' 
+              });
+          }
+
+          return res.status(200).json({ 
+              success: true,
+              message: 'Room updated successfully', 
+              data: updatedRoom 
+          });
+
+      } catch (error: any) {
+          console.error(error);
+          return res.status(500).json({ 
+              success: false,
+              message: error.message // Consider more specific error handling
+          });
+      }
+  }
+
+  async deleteRoom(req: Request, res: Response): Promise<Response> {
+    try {
+        const room = await roomService.getOne(req.params.id);
+        if (room === null) {
+            const errorMessage = 'Room not found';
+            console.error(errorMessage);
+            return res.status(404).json({
                 success: false,
-                message: error.message
+                message: errorMessage
             });
         }
-    }
 
-    async deleteRoom(req: Request, res: Response): Promise<Response> {
-        try {
-            const room = await roomService.getOne(req.params.id);
-            if (!room) {
-                return res.status(404).json({
-                    success: false,
-                    message: "Room not found"
-                });
-            }
+        const deletedRoom = await roomService.delete(room._id); // Assuming roomService.delete returns the deleted room
 
-            const deletedRoom = await roomService.delete(room._id);
-            if (!deletedRoom) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Room not deleted'
-                });
-            }
-
-            return res.status(200).json({
-                success: true,
-                message: "Room deleted successfully",
-                data: deletedRoom
-            })
-
-        } catch (error) {
-            console.error(error);
-            return res.status(500).json({
+        if (!deletedRoom) { // Check if the deletion was successful
+            return res.status(400).json({ 
                 success: false,
-                message: error.message
-            })
-
+                message: 'Room not deleted' 
+            });
         }
+
+        return res.status(200).json({ 
+            success: true,
+            message: 'Room deleted successfully',
+            data: deletedRoom // Return the deleted room's data
+        });
+
+    } catch (error: any) {
+        console.error(error);
+        return res.status(500).json({ 
+            success: false,
+            message: error.message // Consider more specific error handling
+        });
     }
+  }
 }
+
 
 export default new RoomController();

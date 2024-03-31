@@ -1,11 +1,21 @@
 import { Request, Response, NextFunction } from 'express';
 import { logger } from '../utils/logger';
 
-export default (error: Error, req: Request, res: Response, next: NextFunction): Response => {
+interface CustomError extends Error {
+  message: string;
+  status?: number;
+}
+
+const errorMiddleware = (error: CustomError, req: Request, res: Response, next: NextFunction): Response => {
   logger.error(error);
 
-  return res.status(500).json({
+  const status = error.status || 500; 
+  const message = error.message || 'Internal Server Error'; 
+
+  return res.status(status).json({
     success: false,
-    message: error.message
+    message: message
   });
 };
+
+export default errorMiddleware;

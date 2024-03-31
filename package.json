@@ -1,6 +1,6 @@
 {
   "type": "module",
-  "name": "hotelRoomManagement_typescript",
+  "name": "nixxphi-Hotel-Management-Typescript2",
   "version": "1.0.0",
   "description": "Hotelrooms API",
   "main": "src/server.ts",
