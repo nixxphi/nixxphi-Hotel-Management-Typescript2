@@ -33,20 +33,21 @@ class GenericService<T extends Document> {
     let totalCount: number;
 
     if (filter) {
-        totalCount = await this.model.countDocuments(filter);
-        const filterQuery: FilterQuery<T> = filter;
-        data = await this.model.find(filterQuery)
-            .skip((page - 1) * perPage)
-            .limit(perPage)
-            .sort({ createdAt: -1 })
-            .select('-__v -updatedAt -deleted');
-         } else {
-                  totalCount = await this.model.countDocuments({ deleted: false });
-       data = await this.model.find({ deleted: false })
-            .skip((page - 1) * perPage)
-            .limit(perPage)
-            .sort({ createdAt: 1 })
-            .select('-__v -updatedAt -deleted');
+      const filterQuery: FilterQuery<T> = filter as FilterQuery<T>; 
+      totalCount = await this.model.countDocuments(filterQuery);
+      data = await this.model.find(filterQuery)
+          .skip((page - 1) * perPage)
+          .limit(perPage)
+          .sort({ createdAt: -1 })
+          .select('-__v -updatedAt -deleted');
+  } else {
+    const deletedFilter: FilterQuery<T> = { deleted: false } as unknown as FilterQuery<T>;
+      totalCount = await this.model.countDocuments(deletedFilter);
+      data = await this.model.find(deletedFilter)
+          .skip((page - 1) * perPage)
+          .limit(perPage)
+          .sort({ createdAt: 1 })
+          .select('-__v -updatedAt -deleted');
   }
   
   return {
