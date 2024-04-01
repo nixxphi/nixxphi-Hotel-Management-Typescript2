@@ -1,15 +1,10 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.CreateRoomSchema = void 0;
-const joi_1 = __importDefault(require("joi"));
-const id_util_ts_1 = require("../utils/id.util.ts");
-exports.CreateRoomSchema = {
-    body: joi_1.default.object({
-        name: joi_1.default.string().required(),
-        price: joi_1.default.number().required(),
-        roomType: joi_1.default.string().custom(id_util_ts_1.validateObjectId, 'object id validation').required()
-    })
-};
+import joi from 'joi';
+import validateObjectId  from '../utils/id.util.js'
+
+export const CreateRoomSchema = {
+    body: joi.object({
+      name: joi.string().required(),
+      price: joi.number().required(),
+      roomType: joi.string().custom(validateObjectId, 'object id validation').required()
+    }) 
+}
