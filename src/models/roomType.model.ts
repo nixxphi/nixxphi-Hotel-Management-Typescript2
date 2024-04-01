@@ -15,4 +15,4 @@ const roomTypeSchema = new Schema({
     }
 }, {timestamps: true})
 const RoomType = model('RoomType', roomTypeSchema);
-export default RoomType<Schema>;
+export default RoomType;

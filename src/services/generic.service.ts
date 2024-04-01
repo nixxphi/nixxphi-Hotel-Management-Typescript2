@@ -69,7 +69,9 @@ class GenericService<T extends Document> {
       currentPage: page,
       totalPages: Math.ceil(totalCount / perPage),
     };
-  }
+  } private async handleDocumentResponse<U extends T>(filter: any): Promise<U | null> {
+    const doc = await this.model.findOne(filter).select('-__v -updatedAt -deleted');
+    return doc as U || null;
+ }
 }
-
-export default { GenericService };
+export default GenericService;

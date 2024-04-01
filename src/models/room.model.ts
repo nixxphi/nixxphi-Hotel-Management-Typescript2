@@ -1,6 +1,6 @@
 import mongoose, { model, Schema } from 'mongoose'
 
-const roomSchema = new mongoose.Schema({
+const roomSchema = new Schema({
     name: {
         type: String,
         required: true
@@ -19,5 +19,5 @@ const roomSchema = new mongoose.Schema({
         default: false
     }
 }, {timestamps: true})
-const Room = mongoose.model('Room', roomSchema)
-export default Room<Schema>;
+export const Room = model('Room', roomSchema)
+export default model<typeof Room>('Room', roomSchema);

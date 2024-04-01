@@ -39,7 +39,7 @@
     "typescript": "^5.4.3"
   },
   "scripts": {
-    "start": "ts-node src/server.js"
+    "start": "ts-node src/server.ts"
   },
   "dependencies": {
     "@types/cookie-parser": "^1.4.7",
