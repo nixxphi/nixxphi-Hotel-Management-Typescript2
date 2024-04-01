@@ -2,7 +2,7 @@
   "type": "module",
   "name": "nixxphi-Hotel-Management-Typescript2",
   "version": "1.0.0",
-  "main": "src/server.js",
+  "main": "src/server.ts",
   "repository": "https://github.com/nixxphi/nixxphi-Hotel-Management-Typescript2.git",
   "author": "nixxphi <123151475+nixxphi@users.noreply.github.com>",
   "license": "MIT",
@@ -39,7 +39,8 @@
     "typescript": "^5.4.3"
   },
   "scripts": {
-    "start": "ts-node src/server.ts"
+    "start": "yarn ts-node src/server.ts",
+    "build": "tsc"
   },
   "dependencies": {
     "@types/cookie-parser": "^1.4.7",

@@ -19,7 +19,7 @@ function connectToDatabase() {
         // Check if MONGODB_URI is set
         if (!process.env.MONGODB_URI) {
             console.error('MONGODB_URI environment variable is not set');
-            return; // Prevents unnecessary connection attempt
+            return;
         }
         mongoose_1.default.set('strictQuery', false);
         try {

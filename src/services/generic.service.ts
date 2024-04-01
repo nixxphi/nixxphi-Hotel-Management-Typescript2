@@ -6,7 +6,7 @@ class GenericService<T extends Document> {
     constructor(model: Model<T>) {
         this.model = model;
     }
-
+    
     async findById(id: string): Promise<T | null> {
         return this.model.findById(id).exec();
     }

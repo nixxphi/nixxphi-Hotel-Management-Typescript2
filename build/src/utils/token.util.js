@@ -14,27 +14,49 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.checkTokenValidity = exports.verifyToken = exports.generateToken = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const secretKey = process.env.JWT_SECRET;
+const secretKey = process.env.JWT_SECRET; // Ensure JWT_SECRET is a string
 // Generates a token by signing a user's unique details against a secret key whenever they sign in.
 const generateToken = (payload, expiresIn) => __awaiter(void 0, void 0, void 0, function* () {
-    return jsonwebtoken_1.default.sign(payload, secretKey, { expiresIn: expiresIn });
+    try {
+        return jsonwebtoken_1.default.sign(payload, secretKey, { expiresIn });
+    }
+    catch (error) {
+        console.error("Error generating JWT token:", error);
+        throw new Error("Failed to generate JWT token"); // Or handle error differently
+    }
 });
 exports.generateToken = generateToken;
 // Verifies the authenticity of a user by checking the validity of the user's token against the secret key
 const verifyToken = (token) => __awaiter(void 0, void 0, void 0, function* () {
-    return jsonwebtoken_1.default.verify(token, secretKey);
+    try {
+        return jsonwebtoken_1.default.verify(token, secretKey); // Type cast for clarity
+    }
+    catch (error) {
+        console.error("Error verifying JWT token:", error);
+        return undefined; // Or handle error differently (e.g., throw an exception)
+    }
 });
 exports.verifyToken = verifyToken;
 const checkTokenValidity = (token) => __awaiter(void 0, void 0, void 0, function* () {
-    // Decode the token to extract the expiration date
-    const decoded = jsonwebtoken_1.default.decode(token);
-    const exp = decoded === null || decoded === void 0 ? void 0 : decoded.exp;
-    const expirationDate = new Date(exp * 1000);
-    // Checks if the token is expired
-    if (token && expirationDate <= new Date()) {
-        return false;
+    try {
+        // Validate token structure before accessing properties
+        const decoded = jsonwebtoken_1.default.decode(token);
+        if (typeof decoded === 'string') {
+            console.error("Decoded token is a string, not a JWT payload. Potential decoding error.");
+            return false;
+        }
+        if (!(decoded === null || decoded === void 0 ? void 0 : decoded.exp)) {
+            return false;
+        }
+        const expirationDate = new Date(decoded.exp * 1000);
+        // Add a buffer of 5 seconds to account for clock differences
+        const bufferTime = new Date(expirationDate.getTime() - 5000);
+        return !!token && bufferTime <= new Date();
     }
-    return true;
+    catch (error) {
+        console.error("Error checking token validity:", error);
+        return false; // Or handle error differently
+    }
 });
 exports.checkTokenValidity = checkTokenValidity;
 //# sourceMappingURL=token.util.js.map

@@ -1,8 +1,8 @@
 import jwt from 'jsonwebtoken';
 
 interface JWTPayload {
-
-data: { userId: string, username: string }
+ _Id: string,
+  username: string 
 }
 
 const secretKey = process.env.JWT_SECRET as string; // Ensure JWT_SECRET is a string

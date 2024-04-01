@@ -13,27 +13,35 @@ class GenericService {
     constructor(model) {
         this.model = model;
     }
+    findById(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.model.findById(id).exec();
+        });
+    }
     create(data) {
         return __awaiter(this, void 0, void 0, function* () {
-            return this.model.create(data);
+            // Return the created document using type assertion
+            return yield this.model.create(data);
         });
     }
     update(filter, data) {
         return __awaiter(this, void 0, void 0, function* () {
+            // Update with options and projection, return updated document or null
             return yield this.model.findOneAndUpdate(filter, data, { new: true })
                 .select('-__v -updatedAt -deleted');
         });
     }
     delete(filter) {
         return __awaiter(this, void 0, void 0, function* () {
+            // Find and delete one document, return deleted document or null
             return yield this.model.findOneAndDelete(filter);
         });
     }
     find(filter) {
         return __awaiter(this, void 0, void 0, function* () {
+            // Apply default filter for deleted documents and project desired fields
             filter = Object.assign({ deleted: false }, filter);
-            return yield this.model.findOne(filter)
-                .select('-__v -updatedAt -deleted');
+            return (yield this.model.findOne(filter).select('-__v -updatedAt -deleted')) || null;
         });
     }
     search(filter) {
@@ -45,7 +53,12 @@ class GenericService {
             let data = [];
             let totalCount;
             if (filter) {
-                filter = (filter === null || filter === void 0 ? void 0 : filter.deleted) ? filter : filter.hasOwnProperty('deleted') ? filter : Object.assign({ deleted: false }, filter);
+                // Handle filters with or without "deleted" property
+                filter = (filter === null || filter === void 0 ? void 0 : filter.deleted)
+                    ? filter
+                    : filter.hasOwnProperty('deleted')
+                        ? filter
+                        : Object.assign({ deleted: false }, filter);
                 totalCount = yield this.model.countDocuments(filter);
                 data = yield this.model.find(filter)
                     .skip((page - 1) * perPage)
@@ -54,18 +67,25 @@ class GenericService {
                     .select('-__v -updatedAt -deleted');
             }
             else {
-                totalCount = yield this.model.countDocuments({ deleted: false });
-                data = yield this.model.find({ deleted: false })
+                // Find non-deleted documents with pagination and sorting
+                data = yield this.model.find()
                     .skip((page - 1) * perPage)
                     .limit(perPage)
                     .sort({ createdAt: 1 })
-                    .select('-__v -updatedAt -deleted');
+                    .select('-__v -updatedAt');
             }
+            totalCount = yield this.model.countDocuments(filter);
             return {
                 data,
                 currentPage: page,
-                totalPages: Math.ceil(totalCount / perPage)
+                totalPages: Math.ceil(totalCount / perPage),
             };
+        });
+    }
+    handleDocumentResponse(filter) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const doc = yield this.model.findOne(filter).select('-__v -updatedAt -deleted');
+            return doc || null;
         });
     }
 }

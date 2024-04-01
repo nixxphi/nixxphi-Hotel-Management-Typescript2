@@ -1,11 +1,21 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const logger_js_1 = require("../utils/logger.js");
-exports.default = (error, req, res, next) => {
-    logger_js_1.logger.error(error);
-    return res.status(500).json({
-        success: false,
-        message: error.message
-    });
-};
+const mongoose_1 = require("mongoose");
+class CustomError extends mongoose_1.Error {
+}
+function errorHandler(err, req, res, next) {
+    console.error(err.stack || err.message);
+    let statusCode = 500;
+    if (err instanceof CustomError && err.statusCode) {
+        statusCode = err.statusCode;
+    }
+    else if (err.name === 'ValidationError') {
+        statusCode = 400; // Bad Request
+    }
+    else if (err.name === 'UnauthorizedError') {
+        statusCode = 401; // Unauthorized
+    }
+    res.status(statusCode).json({ message: err.message });
+}
+exports.default = errorHandler;
 //# sourceMappingURL=errors.middleware.js.map

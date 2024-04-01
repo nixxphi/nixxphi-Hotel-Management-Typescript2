@@ -9,41 +9,54 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const token_util_js_1 = require("../utils/token.util.js");
-const index_service_js_1 = require("../services/index.service.js");
-exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
-    const authHeaders = req.header('Authorization');
-    const token = authHeaders && authHeaders.substring(0, 7) === 'Bearer '
-        ? authHeaders.replace('Bearer ', '')
-        : (_a = req.cookies) === null || _a === void 0 ? void 0 : _a.token;
-    if (!token) {
-        return res.status(404).json({
-            success: false,
-            message: 'Login to continue',
-        });
-    }
-    // Extracts the expiration date from the token available
-    const isValidToken = yield (0, token_util_js_1.checkTokenValidity)(token);
-    if (!isValidToken) {
-        return res.status(404).json({
-            success: false,
-            message: 'Session expired. Sign in again to continue.',
-        });
-    }
-    // Decode the user token to get user credentials
-    const decoded = yield (0, token_util_js_1.verifyToken)(token);
-    const user = yield index_service_js_1.userService.find({
-        _id: decoded._id,
-        deleted: false
+const token_util_1 = require("../utils/token.util");
+const index_service_1 = require("../services/index.service");
+function authenticateUser(req, res, next) {
+    return __awaiter(this, void 0, void 0, function* () {
+        var _a;
+        try {
+            const authHeader = req.headers['authorization'];
+            const token = authHeader && authHeader.startsWith('Bearer ')
+                ? authHeader.slice(7)
+                : (_a = req.cookies) === null || _a === void 0 ? void 0 : _a.token;
+            if (!token) {
+                return res.status(401).json({
+                    success: false,
+                    message: 'Unauthorized. Please login to continue.',
+                });
+            }
+            // Check token validity
+            const isValidToken = yield (0, token_util_1.checkTokenValidity)(token);
+            if (!isValidToken) {
+                return res.status(401).json({
+                    success: false,
+                    message: 'Session expired. Sign in again to continue.',
+                });
+            }
+            // Decode user token and find user
+            const decoded = yield (0, token_util_1.verifyToken)(token);
+            const user = yield index_service_1.userService.find({
+                _id: decoded === null || decoded === void 0 ? void 0 : decoded._Id,
+                deleted: false,
+            });
+            if (!user) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'User not found',
+                });
+            }
+            // Attach user to request object
+            req.user = user;
+            next();
+        }
+        catch (error) {
+            console.error("Error authenticating user:", error);
+            return res.status(500).json({
+                success: false,
+                message: 'Internal server error. Please try again later.',
+            });
+        }
     });
-    if (!user) {
-        return res.status(404).json({
-            success: false,
-            message: 'User not found',
-        });
-    }
-    req.user = user;
-    next();
-});
+}
+exports.default = authenticateUser;
 //# sourceMappingURL=authenticate.middleware.js.map

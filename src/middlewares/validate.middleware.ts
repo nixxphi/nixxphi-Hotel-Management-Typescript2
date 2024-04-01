@@ -1,5 +1,7 @@
-export default (schema) =>
-  async (req, res, next) => {
+import {Request, Response, NextFunction } from "express";
+
+export default (schema:any) =>
+  async (req: Request, res: Response, next: NextFunction) => {
       if (schema.body) 
         req.body = await schema.body.validateAsync(req.body);
 
