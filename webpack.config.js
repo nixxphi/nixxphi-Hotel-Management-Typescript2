@@ -1,4 +1,4 @@
-module.exports = {
+export {
     entry: "./src/server.ts", 
     output: {
       filename: "build/server.js",
