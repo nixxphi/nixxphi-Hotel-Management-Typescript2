@@ -12,24 +12,26 @@ This project is a Hotel Rooms Management System built with Typescript, Express.j
 - Fetch rooms with optional filters (search, room type, price range)
 - Error handling middleware for handling server errors gracefully
 - Environment configuration using dotenv for managing environment variables
-- Integration with MongoDB database, express and Pino logger.
-- Testing with Mocha, Supertest and Chai Sinon. I know, it was annoying af.
+- Integration with MongoDB database, Express, and Pino logger
+- Testing with Mocha, Supertest, Chai, and Sinon
 
 ## Installation
 
 1. Clone the repository:
    ```bash
-   git clone 
+   git clone https://github.com/nixxphi/nixxphi-Hotel-Management-Typescript2/
    ```
 
 2. Install dependencies:
    ```bash
    npm install
    ```
-3. The dotenv file includes the following
-   - PORT=<your port>
-   - MONGODB_URI=<your mongo uri>
-   - JWT_SECRET=<your jwt secret>
+
+3. Configure environment variables:
+   - `PORT=<your port>`: Port for running the server
+   - `MONGODB_URI=<your MongoDB URI>`: URI for connecting to MongoDB database
+   - `JWT_SECRET=<your JWT secret>`: Secret key for JWT token encryption
+
 4. Start the server in development mode:
    ```bash
    npm run dev
@@ -52,4 +54,8 @@ This project is a Hotel Rooms Management System built with Typescript, Express.j
 - **GET /api/v1/rooms/:id**: Get a room by ID
 - **PATCH /api/v1/rooms/:id**: Update a room by ID
 - **DELETE /api/v1/rooms/:id**: Delete a room by ID
-```
+
+## Postman Collection
+
+You can use the following Postman collection to test the API endpoints:
+[Hotel Management Postman Collection](#)
