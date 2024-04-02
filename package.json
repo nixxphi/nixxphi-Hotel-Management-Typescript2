@@ -47,6 +47,7 @@
     "@types/cookie-parser": "^1.4.7",
     "error": "^10.4.0",
     "source-map": "^0.7.4",
-    "start": "^5.1.0"
+    "start": "^5.1.0",
+    "webpack": "^5.91.0"
   }
 }
